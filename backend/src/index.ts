@@ -44,6 +44,16 @@ app.get("/api/health", (c) => {
     return c.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// Debug endpoint
+app.get("/api/debug", (c) => {
+    return c.json({
+        env: process.env.NODE_ENV,
+        hasDbUrl: !!process.env.DATABASE_URL,
+        hasJwtSecret: !!process.env.JWT_SECRET,
+        dbUrlLength: process.env.DATABASE_URL?.length || 0,
+    });
+});
+
 // Routes
 app.route("/api/auth", authRoutes);
 app.route("/api/organizations", organizationRoutes);
