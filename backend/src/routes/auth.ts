@@ -23,8 +23,12 @@ const registerSchema = z.object({
 // Login
 authRoutes.post("/login", async (c) => {
     try {
+        console.log("Login attempt started");
         const body = await c.req.json();
+        console.log("Body parsed, email:", body.email);
+        
         const { email, password } = loginSchema.parse(body);
+        console.log("Validation passed");
 
         const user = await db.query.users.findFirst({
             where: eq(users.email, email),
@@ -41,6 +45,7 @@ authRoutes.post("/login", async (c) => {
                 },
             },
         });
+        console.log("User query completed, found:", !!user);
 
         if (!user) {
             return c.json({ error: "Invalid credentials" }, 401);
@@ -50,14 +55,20 @@ authRoutes.post("/login", async (c) => {
             return c.json({ error: "Account is not active" }, 401);
         }
 
+        console.log("Comparing password...");
         const validPassword = await compare(password, user.passwordHash);
+        console.log("Password valid:", validPassword);
+        
         if (!validPassword) {
             return c.json({ error: "Invalid credentials" }, 401);
         }
 
+        console.log("Generating token...");
         const token = generateToken(user.id, user.email);
+        console.log("Token generated");
 
         // Log login
+        console.log("Inserting audit log...");
         await db.insert(auditLogs).values({
             userId: user.id,
             action: "login",
@@ -66,6 +77,7 @@ authRoutes.post("/login", async (c) => {
             ipAddress: c.req.header("x-forwarded-for") || "unknown",
             userAgent: c.req.header("user-agent"),
         });
+        console.log("Audit log inserted");
 
         return c.json({
             token,
