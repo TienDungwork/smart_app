@@ -80,10 +80,11 @@ authRoutes.post("/login", async (c) => {
             },
         });
     } catch (error: any) {
+        console.error("Login error:", error);
         if (error instanceof z.ZodError) {
             return c.json({ error: "Validation failed", details: error.errors }, 400);
         }
-        return c.json({ error: error.message }, 500);
+        return c.json({ error: error?.message || "Login failed" }, 500);
     }
 });
 
