@@ -23,16 +23,12 @@ const app = new Hono();
 app.use("*", logger());
 app.use("*", cors({
     origin: (origin) => {
-        // Allow all origins in development
         if (process.env.NODE_ENV !== 'production') return origin;
-        
-        // Allow specific origins in production
         const allowed = [
             'http://localhost:5173',
             'http://localhost:3000',
         ];
-        
-        // Allow all Vercel deployments
+    
         if (origin?.includes('.vercel.app')) return origin;
         
         return allowed.includes(origin || '') ? origin : allowed[0];
