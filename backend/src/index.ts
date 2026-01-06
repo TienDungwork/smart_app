@@ -22,12 +22,21 @@ const app = new Hono();
 // Middleware
 app.use("*", logger());
 app.use("*", cors({
-    origin: [
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "https://*.vercel.app",
-        "https://vercel.app"
-    ],
+    origin: (origin) => {
+        // Allow all origins in development
+        if (process.env.NODE_ENV !== 'production') return origin;
+        
+        // Allow specific origins in production
+        const allowed = [
+            'http://localhost:5173',
+            'http://localhost:3000',
+        ];
+        
+        // Allow all Vercel deployments
+        if (origin?.includes('.vercel.app')) return origin;
+        
+        return allowed.includes(origin || '') ? origin : allowed[0];
+    },
     credentials: true,
 }));
 
