@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { FileText, Download, TrendingUp, Users, Calendar } from 'lucide-react';
+import { FileText, Download, Calendar } from 'lucide-react';
 
 interface Session {
     id: string;

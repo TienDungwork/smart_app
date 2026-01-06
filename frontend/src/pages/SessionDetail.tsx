@@ -7,7 +7,6 @@ import {
     Square,
     Lock,
     Users,
-    Clock,
     CheckCircle,
     AlertCircle,
     XCircle,

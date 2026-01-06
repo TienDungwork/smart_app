@@ -8,7 +8,6 @@ import {
     AlertTriangle,
     TrendingUp,
     Clock,
-    CheckCircle,
     Play,
 } from 'lucide-react';
 

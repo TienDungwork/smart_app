@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
-import { Plus, Calendar, Clock, Users, Play, Square, Lock } from 'lucide-react';
+import { Plus, Calendar, Clock, Play, Square } from 'lucide-react';
 
 interface Session {
     id: string;
@@ -18,7 +18,6 @@ interface Session {
 export default function Sessions() {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         loadSessions();
@@ -52,7 +51,7 @@ export default function Sessions() {
                     <h1 className="page-title">Buổi học / Cuộc họp</h1>
                     <p className="page-subtitle">Quản lý các buổi điểm danh</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                <button className="btn btn-primary" onClick={() => alert('Chức năng đang phát triển')}>
                     <Plus size={18} />
                     Tạo buổi mới
                 </button>

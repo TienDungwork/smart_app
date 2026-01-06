@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { Plus, Users, Search, UserCheck, UserX } from 'lucide-react';
+import { Plus, Search, UserCheck, UserX } from 'lucide-react';
 
 interface Person {
     id: string;
