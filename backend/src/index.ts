@@ -49,7 +49,7 @@ app.route("/api/reports", reportRoutes);
 
 // WebSocket for realtime updates
 const server = Bun.serve({
-    port: Number(process.env.PORT) || 3000,
+    port: Number(process.env.PORT) || 3005,
     fetch: app.fetch,
     websocket: {
         open(ws) {
