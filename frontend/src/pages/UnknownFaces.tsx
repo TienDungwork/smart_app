@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
-import { UserX, Check, X, Clock, Eye } from 'lucide-react';
+import { UserX, Check, X, Clock } from 'lucide-react';
 
 interface UnknownFace {
     id: string;

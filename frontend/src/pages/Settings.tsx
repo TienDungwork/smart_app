@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { api } from '../lib/api';
+import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { User, Building, Moon, Sun, Lock, Bell, Shield } from 'lucide-react';

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
-import { Plus, Calendar, Clock, Play, Square, Trash2 } from 'lucide-react';
+import { Plus, Calendar, Clock, Play, Square } from 'lucide-react';
 import CreateSessionModal from '../components/CreateSessionModal';
-import ConfirmDialog from '../components/ConfirmDialog';
 
 interface Session {
     id: string;
@@ -21,7 +20,6 @@ export default function Sessions() {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
     useEffect(() => {
         loadSessions();
@@ -75,8 +73,8 @@ export default function Sessions() {
                     <div className="empty-state">
                         <Calendar size={48} />
                         <p>Chưa có buổi nào</p>
-                        <button 
-                            className="btn btn-primary" 
+                        <button
+                            className="btn btn-primary"
                             onClick={() => setShowCreateModal(true)}
                             style={{ marginTop: 'var(--space-md)' }}
                         >
@@ -168,7 +166,7 @@ export default function Sessions() {
                 </div>
             )}
 
-            <CreateSessionModal 
+            <CreateSessionModal
                 isOpen={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
                 onSuccess={loadSessions}
