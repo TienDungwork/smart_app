@@ -11,6 +11,9 @@ import Persons from './pages/Persons';
 import Rooms from './pages/Rooms';
 import Cameras from './pages/Cameras';
 import Reports from './pages/Reports';
+import Settings from './pages/Settings';
+import UnknownFaces from './pages/UnknownFaces';
+import SystemDesign from './pages/SystemDesign';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
@@ -49,6 +52,9 @@ function App() {
                                         <Route path="/rooms" element={<Rooms />} />
                                         <Route path="/cameras" element={<Cameras />} />
                                         <Route path="/reports" element={<Reports />} />
+                                        <Route path="/unknown-faces" element={<UnknownFaces />} />
+                                        <Route path="/settings" element={<Settings />} />
+                                        <Route path="/system-design" element={<SystemDesign />} />
                                     </Routes>
                                 </Layout>
                             </ProtectedRoute>

@@ -1,35 +1,46 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { Plus, Camera, Wifi, WifiOff, AlertTriangle, Play } from 'lucide-react';
+import { Plus, Camera, Wifi, WifiOff, Video, Play } from 'lucide-react';
+import CreateCameraModal from '../components/CreateCameraModal';
 
-interface CameraData {
+interface CameraDevice {
     id: string;
     name: string;
     rtspUrl: string;
     type: string;
     status: string;
-    lastHeartbeat?: string;
     room?: { name: string };
+    lastSeen?: string;
 }
 
 export default function Cameras() {
-    const [cameras, setCameras] = useState<CameraData[]>([]);
-    const [overview, setOverview] = useState<any>(null);
+    const [cameras, setCameras] = useState<CameraDevice[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [testingId, setTestingId] = useState<string | null>(null);
 
     useEffect(() => {
-        Promise.all([api.getCameras(), api.getCameraStatus()])
-            .then(([cams, status]) => {
-                setCameras(cams);
-                setOverview(status);
-            })
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        loadCameras();
     }, []);
 
+    const loadCameras = () => {
+        setLoading(true);
+        api.getCameras()
+            .then(setCameras)
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    };
+
     const handleTest = async (id: string) => {
-        const result = await api.testCamera(id);
-        alert(`Kết nối thành công!\nĐộ trễ: ${result.latency}ms\nĐộ phân giải: ${result.resolution}\nFPS: ${result.fps}`);
+        setTestingId(id);
+        try {
+            await api.testCamera(id);
+            loadCameras();
+        } catch (error: any) {
+            alert(error.message);
+        } finally {
+            setTestingId(null);
+        }
     };
 
     if (loading) {
@@ -41,119 +52,103 @@ export default function Cameras() {
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Camera</h1>
-                    <p className="page-subtitle">Quản lý và giám sát camera AI</p>
+                    <p className="page-subtitle">Quản lý các camera nhận diện khuôn mặt</p>
                 </div>
-                <button className="btn btn-primary">
-                    <Plus size={18} />
+                <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+                    <Plus size={16} />
                     Thêm camera
                 </button>
             </div>
 
-            <div className="stats-grid" style={{ marginBottom: 'var(--space-lg)' }}>
-                <div className="stat-card">
-                    <div className="stat-icon primary">
-                        <Camera />
-                    </div>
-                    <div className="stat-content">
-                        <div className="stat-value">{overview?.total || 0}</div>
-                        <div className="stat-label">Tổng camera</div>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-icon success">
-                        <Wifi />
-                    </div>
-                    <div className="stat-content">
-                        <div className="stat-value">{overview?.online || 0}</div>
-                        <div className="stat-label">Online</div>
+            {cameras.length === 0 ? (
+                <div className="card">
+                    <div className="empty-state">
+                        <Camera size={48} />
+                        <p>Chưa có camera nào</p>
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={() => setShowCreateModal(true)}
+                            style={{ marginTop: 'var(--space-md)' }}
+                        >
+                            <Plus size={16} />
+                            Thêm camera đầu tiên
+                        </button>
                     </div>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-icon error">
-                        <WifiOff />
-                    </div>
-                    <div className="stat-content">
-                        <div className="stat-value">{overview?.offline || 0}</div>
-                        <div className="stat-label">Offline</div>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-icon warning">
-                        <AlertTriangle />
-                    </div>
-                    <div className="stat-content">
-                        <div className="stat-value">{overview?.degraded || 0}</div>
-                        <div className="stat-label">Degraded</div>
-                    </div>
-                </div>
-            </div>
+            ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-md)' }}>
+                    {cameras.map((camera) => (
+                        <div key={camera.id} className="card" style={{ padding: 'var(--space-lg)' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 'var(--space-md)' }}>
+                                <div style={{
+                                    width: 44,
+                                    height: 44,
+                                    borderRadius: 'var(--radius-lg)',
+                                    background: camera.status === 'online' ? 'linear-gradient(135deg, #22c55e, #16a34a)' : 'linear-gradient(135deg, #6b7280, #4b5563)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <Video size={22} color="white" />
+                                </div>
+                                <span className={`badge badge-${camera.status === 'online' ? 'online' : 'offline'}`}>
+                                    {camera.status === 'online' ? (
+                                        <><Wifi size={12} /> Online</>
+                                    ) : (
+                                        <><WifiOff size={12} /> Offline</>
+                                    )}
+                                </span>
+                            </div>
+                            
+                            <h3 style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 'var(--space-xs)' }}>
+                                {camera.name}
+                            </h3>
+                            
+                            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: 'var(--space-sm)' }}>
+                                📍 {camera.room?.name || 'Chưa gán phòng'}
+                            </div>
+                            
+                            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: 'var(--space-sm)' }}>
+                                Loại: {camera.type === 'entry' ? '🚪 Cổng vào' : camera.type === 'exit' ? '🚶 Cổng ra' : '🔄 Cả hai'}
+                            </div>
 
-            <div className="card">
-                <div className="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Camera</th>
-                                <th>Phòng</th>
-                                <th>Loại</th>
-                                <th>Trạng thái</th>
-                                <th>Heartbeat</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {cameras.map((camera) => (
-                                <tr key={camera.id}>
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-                                            <div style={{
-                                                width: 36,
-                                                height: 36,
-                                                borderRadius: 'var(--radius-md)',
-                                                background: camera.status === 'online' ? 'var(--status-present)' : camera.status === 'offline' ? 'var(--status-absent)' : 'var(--status-late)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                            }}>
-                                                <Camera size={18} color="white" />
-                                            </div>
-                                            <div>
-                                                <div style={{ fontWeight: 500, color: 'var(--color-text-primary)' }}>{camera.name}</div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>
-                                                    {camera.rtspUrl.substring(0, 30)}...
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>{camera.room?.name}</td>
-                                    <td>
-                                        <span className={`badge ${camera.type === 'entry' ? 'badge-present' : 'badge-late'}`}>
-                                            {camera.type === 'entry' ? '→ Vào' : '← Ra'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`badge badge-${camera.status}`}>
-                                            {camera.status === 'online' ? '🟢 Online' :
-                                                camera.status === 'offline' ? '🔴 Offline' : '🟡 Degraded'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {camera.lastHeartbeat
-                                            ? new Date(camera.lastHeartbeat).toLocaleString('vi-VN')
-                                            : '-'}
-                                    </td>
-                                    <td>
-                                        <button className="btn btn-secondary btn-sm" onClick={() => handleTest(camera.id)}>
-                                            <Play size={14} />
-                                            Test
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            <div style={{ 
+                                padding: 'var(--space-sm)', 
+                                background: 'var(--color-bg-tertiary)', 
+                                borderRadius: 'var(--radius-sm)',
+                                fontSize: '0.7rem',
+                                fontFamily: 'monospace',
+                                color: 'var(--color-text-muted)',
+                                wordBreak: 'break-all',
+                                marginBottom: 'var(--space-md)'
+                            }}>
+                                {camera.rtspUrl}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                                <button 
+                                    className="btn btn-secondary btn-sm" 
+                                    style={{ flex: 1 }}
+                                    onClick={() => handleTest(camera.id)}
+                                    disabled={testingId === camera.id}
+                                >
+                                    <Play size={14} />
+                                    {testingId === camera.id ? 'Đang test...' : 'Test kết nối'}
+                                </button>
+                                <button className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
+                                    Chỉnh sửa
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            </div>
+            )}
+
+            <CreateCameraModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onSuccess={loadCameras}
+            />
         </div>
     );
 }
